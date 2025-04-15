@@ -9,13 +9,22 @@ if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
 print("Converting PDF to images...")
-images = convert_from_path(INPUT_PDF, poppler_path=POPPLER_PATH)
+# Increased DPI and using better quality settings
+images = convert_from_path(
+    INPUT_PDF,
+    poppler_path=POPPLER_PATH,
+    dpi=300,  # Higher DPI for better quality
+    fmt='png',  # PNG format for better quality
+    thread_count=4,  # Use multiple threads for faster conversion
+    use_cropbox=True,
+    strict=False
+)
 image_paths = []
 
 for i, img in enumerate(images):
-    path = os.path.join(OUTPUT_DIR, f"page_{i + 1}.jpg")
-    img.save(path, "JPEG")
-    image_paths.append(f"page_{i + 1}.jpg")
+    path = os.path.join(OUTPUT_DIR, f"page_{i + 1}.png")  # Using PNG instead of JPEG
+    img.save(path, "PNG", optimize=False, quality=100)  # Maximum quality settings
+    image_paths.append(f"page_{i + 1}.png")
 
 print("Generating interactive flipbook HTML...")
 with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
@@ -63,6 +72,9 @@ with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
             width: 100%;
             height: 100%;
             object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            -ms-interpolation-mode: nearest-neighbor;
         }}
         .page-controls {{
             position: absolute;
@@ -77,6 +89,10 @@ with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
             padding: 0 30px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
+        }}
+        .page-controls * {{
+            pointer-events: auto;
         }}
         #flipbook:hover .page-controls {{
             opacity: 1;

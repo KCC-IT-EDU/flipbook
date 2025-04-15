@@ -42,6 +42,9 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            -ms-interpolation-mode: nearest-neighbor;
         }
         .page-controls {
             position: absolute;
@@ -56,6 +59,10 @@
             padding: 0 30px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .page-controls * {
+            pointer-events: auto;
         }
         #flipbook:hover .page-controls {
             opacity: 1;
@@ -107,7 +114,7 @@
     <div class="container">
         <div id="flipbook">
             <div class="page">
-                <img src="page_1.jpg"/>
+                <img src="page_1.png"/>
                 <div class="page-controls">
                     <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
                         <i class="fas fa-chevron-left"></i>
@@ -126,7 +133,7 @@
                 </div>
             </div>
             <div class="page">
-                <img src="page_2.jpg"/>
+                <img src="page_2.png"/>
                 <div class="page-controls">
                     <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
                         <i class="fas fa-chevron-left"></i>
@@ -145,7 +152,7 @@
                 </div>
             </div>
             <div class="page">
-                <img src="page_3.jpg"/>
+                <img src="page_3.png"/>
                 <div class="page-controls">
                     <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
                         <i class="fas fa-chevron-left"></i>
@@ -164,7 +171,7 @@
                 </div>
             </div>
             <div class="page">
-                <img src="page_4.jpg"/>
+                <img src="page_4.png"/>
                 <div class="page-controls">
                     <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
                         <i class="fas fa-chevron-left"></i>
