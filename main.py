@@ -2,7 +2,7 @@ import os
 from pdf2image import convert_from_path
 
 INPUT_PDF = "input/original.pdf"
-OUTPUT_DIR = "public"
+OUTPUT_DIR = "output"
 POPPLER_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "poppler", "Library", "bin")
 
 if not os.path.exists(OUTPUT_DIR):
@@ -153,7 +153,7 @@ with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="turn.min.js"></script>
+    <script src="../turnjs/turn.min.js"></script>
     <script>
         let autoFlipInterval;
         let isAutoFlip = false;
