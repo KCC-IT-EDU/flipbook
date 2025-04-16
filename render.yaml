@@ -1,11 +1,10 @@
 services:
-  - type: static
+  - type: web
     name: flipbook
     env: static
-    buildCommand: |
-      python main.py
+    buildCommand: python main.py
     staticPublishPath: output
     routes:
       - type: rewrite
         source: /*
-        destination: /index.html 
+        destination: /flipbook.html 
