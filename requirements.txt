@@ -120,7 +120,6 @@ web3==7.8.0
 webencodings==0.5.1
 websockets==13.1
 yarl==1.18.3
-pdf2image
 Pillow
 selenium==4.18.1
 img2pdf==0.5.1
