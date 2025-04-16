@@ -1,9 +1,19 @@
 services:
   - type: web
-    name: flipbook
+    name: flipbook-8hfy
     env: static
-    buildCommand: python main.py
-    staticPublishPath: output
+    buildCommand: |
+      pip install pdf2image
+      pip install Pillow
+      python main.py
+    staticPublishPath: ./output
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.8.0
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
     routes:
       - type: rewrite
         source: /*
