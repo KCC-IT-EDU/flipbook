@@ -328,7 +328,7 @@ with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
     <div class="container">
         <div id="flipbook">
             <div class="page cover-page">
-                <img src="../input/cover.jpg" class="cover-image" alt="Cover Image">
+                <img src="../output/cover.jpg" class="cover-image" alt="Cover Image">
                 <div class="cover-overlay"></div>
                 <a href="javascript:void(0)" class="start-button" onclick="$('#flipbook').turn('next')">
                     Start Reading <i class="fas fa-arrow-right"></i>
@@ -363,7 +363,7 @@ with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
 
     f.write(f"""            <div class="page last-page">
                 <div class="qr-code-container">
-                    <img src="../input/qrcode.png" class="qr-code-image" alt="QR Code">
+                    <img src="../output/qrcode.png" class="qr-code-image" alt="QR Code">
                 </div>
                 
                 <div class="page-controls">
