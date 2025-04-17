@@ -1,5 +1,4 @@
-import http.server
-import socketserver
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 import logging
 
@@ -10,13 +9,24 @@ logger = logging.getLogger(__name__)
 PORT = int(os.environ.get('PORT', 10000))
 DIRECTORY = "output"
 
-class Handler(http.server.SimpleHTTPRequestHandler):
+class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    def do_GET(self):
+        # Always serve flipbook.html for root path
+        if self.path == '/':
+            self.path = '/flipbook.html'
+        return super().do_GET()
 
     def log_message(self, format, *args):
         logger.info("%s - - [%s] %s" % (self.address_string(), self.log_date_time_string(), format%args))
 
-with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as httpd:
-    logger.info(f"Serving at http://0.0.0.0:{PORT}")
-    httpd.serve_forever() 
+def run(server_class=HTTPServer, handler_class=Handler):
+    server_address = ('0.0.0.0', PORT)
+    httpd = server_class(server_address, handler_class)
+    logger.info(f"Starting server at http://0.0.0.0:{PORT}")
+    httpd.serve_forever()
+
+if __name__ == '__main__':
+    run() 

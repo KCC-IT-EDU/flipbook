@@ -14,5 +14,5 @@ services:
         value: 3.11.11
       - key: PORT
         value: 10000
-    healthCheckPath: /
+    healthCheckPath: /flipbook.html
     staticPublishPath: ./output
