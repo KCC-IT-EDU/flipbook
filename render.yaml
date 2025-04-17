@@ -2,16 +2,16 @@ services:
   - type: web
     name: flipbook-8hfy
     env: python
-    buildCommand: |
-      apt-get update
-      apt-get install -y poppler-utils
-      pip install -r requirements.txt
-      python main.py
-    startCommand: pip install -r requirements.txt && python app.py
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
       - key: PORT
         value: 10000
-    healthCheckPath: /flipbook.html
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "true"
+    healthCheckPath: /
     staticPublishPath: ./output
