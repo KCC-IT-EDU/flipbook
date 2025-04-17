@@ -5,10 +5,17 @@ services:
     buildCommand: |
       apt-get update
       apt-get install -y poppler-utils
-      pip install --upgrade pip
+      python -m pip install --upgrade pip
       pip install -r requirements.txt
       python main.py
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
+    startCommand: |
+      if [ -f "output/flipbook.html" ]; then
+        echo "Starting Flask server..."
+        gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
+      else
+        echo "Error: flipbook.html not found. Please check the build process."
+        exit 1
+      fi
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
@@ -16,5 +23,7 @@ services:
         value: 10000
       - key: FLASK_ENV
         value: production
+      - key: PYTHONPATH
+        value: $PYTHONPATH:.
     healthCheckPath: /
     staticPublishPath: ./output
