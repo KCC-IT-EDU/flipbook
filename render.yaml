@@ -8,11 +8,20 @@ services:
       python -m pip install --upgrade pip
       pip install -r requirements.txt
       python main.py
-    startCommand: python server.py
+    startCommand: |
+      if [ -f "output/flipbook.html" ]; then
+        echo "Starting Flask server..."
+        python app.py
+      else
+        echo "Error: flipbook.html not found"
+        exit 1
+      fi
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
       - key: PORT
         value: 10000
+      - key: FLASK_ENV
+        value: production
     healthCheckPath: /flipbook.html
     staticPublishPath: ./output
