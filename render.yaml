@@ -2,8 +2,15 @@ services:
   - type: web
     name: flipbook-8hfy
     env: python
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: python app.py
+    buildCommand: |
+      apt-get update
+      apt-get install -y poppler-utils
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+      python main.py
+    startCommand: |
+      pip install -r requirements.txt
+      python app.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
