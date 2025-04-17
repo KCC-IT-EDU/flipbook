@@ -3,7 +3,7 @@ services:
     name: flipbook-8hfy
     env: python
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --threads 2 --timeout 120 --access-logfile - --error-logfile - --log-level info app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
@@ -13,5 +13,7 @@ services:
         value: production
       - key: PYTHONUNBUFFERED
         value: "true"
+      - key: GUNICORN_CMD_ARGS
+        value: "--preload"
     healthCheckPath: /
     staticPublishPath: ./output

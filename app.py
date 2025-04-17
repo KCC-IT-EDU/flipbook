@@ -2,8 +2,6 @@ from flask import Flask, send_from_directory
 import os
 import sys
 import logging
-import time
-import threading
 
 # Configure logging
 logging.basicConfig(
@@ -13,33 +11,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Create Flask app with production config
 app = Flask(__name__, static_folder='output')
+app.config['ENV'] = 'production'
+app.config['DEBUG'] = False
 
 @app.route('/')
 def serve_flipbook():
-    logger.info("Serving flipbook.html")
-    return send_from_directory('output', 'flipbook.html')
+    try:
+        logger.info("Serving flipbook.html")
+        return send_from_directory('output', 'flipbook.html')
+    except Exception as e:
+        logger.error(f"Error serving flipbook.html: {str(e)}")
+        return "Error serving flipbook", 500
 
 @app.route('/<path:path>')
 def serve_static(path):
-    logger.info(f"Serving static file: {path}")
-    return send_from_directory('output', path)
+    try:
+        logger.info(f"Serving static file: {path}")
+        return send_from_directory('output', path)
+    except Exception as e:
+        logger.error(f"Error serving static file {path}: {str(e)}")
+        return "Error serving file", 500
 
-def start_server():
+# Only used when running directly (not through gunicorn)
+if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     logger.info(f"Starting server on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
-
-if __name__ == '__main__':
-    # Start the server in a separate thread
-    server_thread = threading.Thread(target=start_server)
-    server_thread.daemon = True
-    server_thread.start()
-    
-    # Keep the main thread alive
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        logger.info("Shutting down server...")
-        sys.exit(0) 
+    app.run(host='0.0.0.0', port=port) 
