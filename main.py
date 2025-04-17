@@ -1,7 +1,7 @@
 import os
 from pdf2image import convert_from_path
 
-INPUT_PDF = "input/original.pdf"
+INPUT_PDF = "original.pdf"
 OUTPUT_DIR = "output"
 
 # Use system-installed Poppler
