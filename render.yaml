@@ -4,8 +4,11 @@ services:
     env: static
     buildCommand: |
       apt-get update
-      apt-get install -y poppler-utils
-      export PATH="/usr/bin:$PATH"
+      apt-get install -y wget
+      wget https://github.com/oschwartz10612/poppler-windows/releases/download/v23.11.0-0/Release-23.11.0-0.zip
+      unzip Release-23.11.0-0.zip -d poppler
+      chmod +x poppler/Library/bin/*
+      export PATH="$PWD/poppler/Library/bin:$PATH"
       pip install pdf2image
       pip install Pillow
       python main.py
@@ -13,8 +16,6 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.8.0
-      - key: PATH
-        value: "/usr/bin:$PATH"
     headers:
       - path: /*
         name: Cache-Control
