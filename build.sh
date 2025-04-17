@@ -14,6 +14,19 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install gunicorn
 
+# Create output directory if it doesn't exist
+echo "Creating output directory..."
+mkdir -p output/turnjs
+
+# Copy static files to output directory
+echo "Copying static files..."
+if [ -d "turnjs" ]; then
+    cp -r turnjs/* output/turnjs/
+    echo "Copied turnjs files to output/turnjs/"
+else
+    echo "Warning: turnjs directory not found"
+fi
+
 # Generate the flipbook
 echo "Generating flipbook..."
 python main.py

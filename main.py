@@ -1,469 +1,52 @@
-import os
 from pdf2image import convert_from_path
+from PIL import Image
+import os
+from setup_static import setup_static_files
 
-INPUT_PDF = "original.pdf"
-OUTPUT_DIR = "output"
+def convert_pdf_to_images():
+    print("Converting PDF to images...")
+    # Create output directory if it doesn't exist
+    if not os.path.exists('output'):
+        os.makedirs('output')
 
-# Use system-installed Poppler
-POPPLER_PATH = None  # This will use the system-installed Poppler
+    # Convert PDF to images
+    images = convert_from_path('input/original.pdf', dpi=300)
+    
+    # Save images
+    for i, image in enumerate(images):
+        image.save(f'output/page_{i+1}.png', 'PNG', quality=100)
 
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+def generate_html():
+    print("Generating interactive flipbook HTML...")
+    # Get number of pages
+    num_pages = len([f for f in os.listdir('output') if f.startswith('page_') and f.endswith('.png')])
+    
+    # Generate HTML content
+    with open('template.html', 'r') as f:
+        template = f.read()
+    
+    # Replace placeholders
+    html = template.replace('{{NUM_PAGES}}', str(num_pages))
+    
+    # Save HTML
+    with open('output/flipbook.html', 'w') as f:
+        f.write(html)
 
-print("Converting PDF to images...")
-images = convert_from_path(INPUT_PDF, poppler_path=POPPLER_PATH)
-image_paths = []
+def main():
+    # First, set up static files
+    print("Setting up static files...")
+    setup_static_files()
+    
+    # Then convert PDF and generate flipbook
+    convert_pdf_to_images()
+    generate_html()
+    
+    print("Done! Open output/flipbook.html in your browser to view the interactive flipbook.")
+    print("Controls:")
+    print("- Use arrow icons on the pages to navigate")
+    print("- Click play/pause icon in the center to toggle automatic page turning")
+    print("- Use left/right arrow keys to navigate")
+    print("- Press spacebar to toggle auto-flip")
 
-for i, img in enumerate(images):
-    path = os.path.join(OUTPUT_DIR, f"page_{i + 1}.jpg")
-    img.save(path, "JPEG")
-    image_paths.append(f"page_{i + 1}.jpg")
-
-print("Generating interactive flipbook HTML...")
-with open(os.path.join(OUTPUT_DIR, "flipbook.html"), "w") as f:
-    f.write(f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Interactive PDF Flipbook</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #fff;
-        }}
-        .container {{
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            padding: 0;
-        }}
-        #flipbook {{
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }}
-        #flipbook .page {{
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background: #000;
-        }}
-        #flipbook .page img {{
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            margin: 0;
-            padding: 0;
-            display: block;
-        }}
-        .cover-page {{
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }}
-        .cover-image {{
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            margin: 0;
-            padding: 0;
-        }}
-        /* First page (hardcover) */
-        #flipbook .page:first-child {{
-            background: linear-gradient(45deg, #2c3e50, #34495e);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }}
-        #flipbook .page:first-child::before {{
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
-            pointer-events: none;
-        }}
-        /* Last page (back cover) */
-        #flipbook .page:last-child {{
-            background: linear-gradient(45deg, #34495e, #2c3e50);
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-            border-left: 1px solid rgba(255,255,255,0.1);
-        }}
-        /* Regular pages */
-        #flipbook .page:not(:first-child):not(:last-child) {{
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }}
-        /* Page content styling */
-        .page-content {{
-            padding: 20px;
-            text-align: center;
-        }}
-        .book-title {{
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }}
-        .book-subtitle {{
-            font-size: 1.2em;
-            opacity: 0.8;
-        }}
-        .page-controls {{
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }}
-        .page-controls * {{
-            pointer-events: auto;
-        }}
-        #flipbook:hover .page-controls {{
-            opacity: 1;
-        }}
-        .nav-button {{
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 32px;
-            color: white;
-            padding: 15px;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }}
-        .nav-button:hover {{
-            transform: scale(1.2);
-        }}
-        .nav-left {{
-            margin-right: auto;
-        }}
-        .nav-right {{
-            margin-left: auto;
-        }}
-        .nav-center {{
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }}
-        .page-info {{
-            font-size: 20px;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }}
-        .auto-flip {{
-            color: white;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            font-size: 24px;
-        }}
-        .auto-flip:hover {{
-            transform: scale(1.2);
-        }}
-        /* Interactive Cover Page Styles */
-        .cover-page {{
-            background: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }}
-        .cover-image {{
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            position: absolute;
-            top: 0;
-            left: 0;
-            margin: 0;
-            padding: 0;
-        }}
-        .cover-overlay {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.2);
-            z-index: 1;
-        }}
-        .start-button {{
-            position: absolute;
-            bottom: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            animation: fadeIn 1s ease-out 1s both;
-            text-decoration: none;
-            display: inline-block;
-            z-index: 2;
-        }}
-        .start-button:hover {{
-            background: rgba(255,255,255,0.3);
-            transform: translateX(-50%) scale(1.05);
-        }}
-        .floating-elements {{
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }}
-        .floating-element {{
-            position: absolute;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }}
-        @keyframes gradientBG {{
-            0% {{ background-position: 0% 50%; }}
-            50% {{ background-position: 100% 50%; }}
-            100% {{ background-position: 0% 50%; }}
-        }}
-        @keyframes fadeInDown {{
-            from {{
-                opacity: 0;
-                transform: translateY(-30px);
-            }}
-            to {{
-                opacity: 1;
-                transform: translateY(0);
-            }}
-        }}
-        @keyframes fadeInUp {{
-            from {{
-                opacity: 0;
-                transform: translateY(30px);
-            }}
-            to {{
-                opacity: 1;
-                transform: translateY(0);
-            }}
-        }}
-        @keyframes fadeIn {{
-            from {{ opacity: 0; }}
-            to {{ opacity: 1; }}
-        }}
-        @keyframes float {{
-            0% {{ transform: translateY(0) rotate(0deg); }}
-            50% {{ transform: translateY(-20px) rotate(180deg); }}
-            100% {{ transform: translateY(0) rotate(360deg); }}
-        }}
-        /* Last page QR code styles */
-        .last-page {{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: #fff;
-            padding: 20px;
-        }}
-        .qr-code-container {{
-            width: 200px;
-            height: 200px;
-            margin: 20px auto;
-        }}
-        .qr-code-image {{
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }}
-        .end-content {{
-            margin-top: 20px;
-            text-align: center;
-        }}
-        .book-title {{
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            color: #333;
-        }}
-        .book-subtitle {{
-            font-size: 1.2em;
-            color: #666;
-            margin-bottom: 20px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="flipbook">
-            <div class="page cover-page">
-                <img src="../output/cover.jpg" class="cover-image" alt="Cover Image">
-                <div class="cover-overlay"></div>
-                <a href="javascript:void(0)" class="start-button" onclick="$('#flipbook').turn('next')">
-                    Start Reading <i class="fas fa-arrow-right"></i>
-                </a>
-                <div class="page-controls">
-                    <button class="nav-button nav-right" onclick="$('#flipbook').turn('next')">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-""")
-    for img in image_paths:
-        f.write(f'''            <div class="page">
-                <img src="{img}"/>
-                <div class="page-controls">
-                    <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="nav-center">
-        <div class="page-info">
-            Page <span id="current-page">1</span> of {len(images)}
-                        </div>
-                        <div class="auto-flip">
-                            <i class="fas fa-play" id="auto-flip-icon" onclick="toggleAutoFlip()" title="Toggle Auto-Flip"></i>
-                        </div>
-                    </div>
-                    <button class="nav-button nav-right" onclick="$('#flipbook').turn('next')">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>\n''')
-
-    f.write(f"""            <div class="page last-page">
-                <div class="qr-code-container">
-                    <img src="../output/qrcode.png" class="qr-code-image" alt="QR Code">
-                </div>
-                
-                <div class="page-controls">
-                    <button class="nav-button nav-left" onclick="$('#flipbook').turn('previous')">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../turnjs/turn.min.js"></script>
-    <script>
-        let autoFlipInterval;
-        let isAutoFlip = false;
-
-        $(document).ready(function() {{
-            const containerHeight = window.innerHeight * 0.9;
-            const containerWidth = containerHeight * 1.55;
-            
-            $("#flipbook").turn({{
-                width: containerWidth,
-                height: containerHeight,
-                autoCenter: true,
-                when: {{
-                    turning: function(event, page, view) {{
-                        $("#current-page").text(page - 1); // Adjust for cover page
-                    }}
-                }}
-            }});
-
-            // Handle window resize
-            $(window).resize(function() {{
-                const newHeight = window.innerHeight * 0.9;
-                const newWidth = newHeight * 1.55;
-                
-                $("#flipbook").turn("size", newWidth, newHeight);
-            }});
-
-            // Ensure controls are visible on the current page
-            updateControlsVisibility();
-        }});
-
-        function updateControlsVisibility() {{
-            $('.page-controls').css('opacity', '0');
-            const currentPage = $("#flipbook").turn("page");
-            $(`.page:nth-child(${{currentPage}}) .page-controls`).css('opacity', '1');
-        }}
-
-        function startAutoFlip() {{
-            autoFlipInterval = setInterval(function() {{
-                if ($("#flipbook").turn("page") < {len(images) + 1}) {{ // Adjust for cover page
-                    $("#flipbook").turn("next");
-                }} else {{
-                    $("#flipbook").turn("page", 1);
-                }}
-                updateControlsVisibility();
-            }}, 2000);
-        }}
-
-        function toggleAutoFlip() {{
-            const icon = $("#auto-flip-icon");
-            if (isAutoFlip) {{
-                clearInterval(autoFlipInterval);
-                icon.removeClass("fa-pause").addClass("fa-play");
-            }} else {{
-                startAutoFlip();
-                icon.removeClass("fa-play").addClass("fa-pause");
-            }}
-            isAutoFlip = !isAutoFlip;
-        }}
-
-        // Keyboard navigation
-        $(document).keydown(function(e) {{
-            if (e.keyCode == 37) {{ // Left arrow
-                $("#flipbook").turn("previous");
-                updateControlsVisibility();
-            }} else if (e.keyCode == 39) {{ // Right arrow
-                $("#flipbook").turn("next");
-                updateControlsVisibility();
-            }} else if (e.keyCode == 32) {{ // Space bar
-                toggleAutoFlip();
-            }}
-        }});
-
-        // Update controls visibility when manually hovering
-        $("#flipbook").on("mouseover", function() {{
-            updateControlsVisibility();
-        }});
-    </script>
-</body>
-</html>
-""")
-
-print("Done! Open output/flipbook.html in your browser to view the interactive flipbook.")
-print("Controls:")
-print("- Use arrow icons on the pages to navigate")
-print("- Click play/pause icon in the center to toggle automatic page turning")
-print("- Use left/right arrow keys to navigate")
-print("- Press spacebar to toggle auto-flip")
+if __name__ == '__main__':
+    main()
