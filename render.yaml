@@ -1,12 +1,15 @@
 services:
-  - type: static
+  - type: web
     name: flipbook-8hfy
+    env: python
+    buildCommand: |
+      apt-get update
+      apt-get install -y poppler-utils
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python main.py
+    startCommand: echo "Flipbook generated. No server to run."
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
     staticPublishPath: ./output
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /flipbook.html
