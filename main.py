@@ -1,6 +1,7 @@
 from pdf2image import convert_from_path
 from PIL import Image
 import os
+import shutil
 from setup_static import setup_static_files
 
 def convert_pdf_to_images():
@@ -15,6 +16,23 @@ def convert_pdf_to_images():
     # Save images
     for i, image in enumerate(images):
         image.save(f'output/page_{i+1}.png', 'PNG', quality=100)
+    
+    # Copy first page as cover.jpg
+    if os.path.exists('output/page_1.png'):
+        shutil.copy2('output/page_1.png', 'output/cover.jpg')
+        print("Created cover.jpg")
+    
+    # Create QR code for last page
+    try:
+        import qrcode
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data('https://khodiyarcadcenter.com')
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        qr_img.save('output/qrcode.png')
+        print("Created QR code")
+    except Exception as e:
+        print(f"Error creating QR code: {e}")
 
 def generate_html():
     print("Generating interactive flipbook HTML...")
