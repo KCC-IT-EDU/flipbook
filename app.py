@@ -40,7 +40,8 @@ if __name__ == '__main__':
     try:
         port = int(os.environ.get('PORT', 10000))
         logger.info(f"Starting server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=False)
+        # Use 0.0.0.0 to bind to all available network interfaces
+        app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
     except Exception as e:
         logger.error(f"Failed to start server: {str(e)}")
         sys.exit(1) 
