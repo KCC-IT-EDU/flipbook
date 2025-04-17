@@ -4,11 +4,8 @@ services:
     env: static
     buildCommand: |
       apt-get update
-      apt-get install -y wget
-      wget https://github.com/oschwartz10612/poppler-windows/releases/download/v23.11.0-0/Release-23.11.0-0.zip
-      unzip Release-23.11.0-0.zip -d poppler
-      chmod +x poppler/Library/bin/*
-      export PATH="$PWD/poppler/Library/bin:$PATH"
+      apt-get install -y poppler-utils libpoppler-cpp-dev
+      pip install --upgrade pip
       pip install pdf2image
       pip install Pillow
       python main.py
