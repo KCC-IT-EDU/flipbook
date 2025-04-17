@@ -3,7 +3,9 @@ from pdf2image import convert_from_path
 
 INPUT_PDF = "input/original.pdf"
 OUTPUT_DIR = "output"
-POPPLER_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "poppler", "Library", "bin")
+
+# Use system-installed Poppler
+POPPLER_PATH = None  # This will use the system-installed Poppler
 
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)

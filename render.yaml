@@ -5,6 +5,7 @@ services:
     buildCommand: |
       apt-get update
       apt-get install -y poppler-utils
+      export PATH="/usr/bin:$PATH"
       pip install pdf2image
       pip install Pillow
       python main.py
@@ -12,6 +13,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.8.0
+      - key: PATH
+        value: "/usr/bin:$PATH"
     headers:
       - path: /*
         name: Cache-Control
