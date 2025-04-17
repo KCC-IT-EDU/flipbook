@@ -1,5 +1,5 @@
 services:
-  - type: worker
+  - type: web
     name: flipbook-8hfy
     env: python
     buildCommand: |
@@ -7,8 +7,11 @@ services:
       apt-get install -y poppler-utils
       pip install --upgrade pip
       pip install -r requirements.txt
-    startCommand: python main.py
+      python main.py
+    startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
+      - key: PORT
+        value: 10000
     staticPublishPath: ./output
