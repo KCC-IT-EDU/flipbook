@@ -5,18 +5,13 @@ services:
     buildCommand: |
       apt-get update
       apt-get install -y poppler-utils
-      python -m pip install --upgrade pip
       pip install -r requirements.txt
       python main.py
-    startCommand: |
-      pip install -r requirements.txt
-      python app.py
+    startCommand: pip install -r requirements.txt && python app.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
       - key: PORT
         value: 10000
-      - key: FLASK_ENV
-        value: production
     healthCheckPath: /flipbook.html
     staticPublishPath: ./output
