@@ -1,18 +1,7 @@
 services:
-  - type: web
+  - type: static
     name: flipbook-8hfy
-    env: static
-    buildCommand: |
-      apt-get update
-      apt-get install -y poppler-utils libpoppler-cpp-dev
-      pip install --upgrade pip
-      pip install pdf2image
-      pip install Pillow
-      python main.py
     staticPublishPath: ./output
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.8.0
     headers:
       - path: /*
         name: Cache-Control
@@ -20,4 +9,4 @@ services:
     routes:
       - type: rewrite
         source: /*
-        destination: /flipbook.html 
+        destination: /flipbook.html
